@@ -1,0 +1,37 @@
+[global]
+    ### Display & Position ###
+    # Use the new syntax: (horizontal, vertical) offset
+    offset = (10, 10)
+    origin = top-center
+
+    ### Geometry ###
+    # Use the new height syntax: (min_height, max_height)
+    height = (0, 300)
+    width = 300
+
+    ### History & Timeouts ###
+    history_length = 20
+    timeout = 5
+
+    ### Appearance ###
+    font = "sans-serif, 11"
+    background = "#000000"
+    foreground = "#FFFFFF"
+    frame_color = "#333333"
+    urgency = normal
+
+### Urgency-Specific Rules ###
+[urgency_low]
+    background = "#000000"
+    foreground = "#CCCCCC"
+    timeout = 4
+
+[urgency_normal]
+    background = "#000000"
+    foreground = "#EEEEEE"
+    timeout = 5
+
+[urgency_critical]
+    background = "#FF6C6B"
+    foreground = "#000000"
+    timeout = 0

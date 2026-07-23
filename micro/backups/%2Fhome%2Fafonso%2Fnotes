@@ -1,0 +1,17 @@
+You said:
+
+4. Violation of Rule of Three/Five
+The class manages dynamic memory but doesn't implement:
+
+Copy constructor
+
+Copy assignment operator
+
+Move constructor
+
+Move assignment operator
+
+This means copying a list_t will result in a double-free when both objects are destroyed.
+
+
+Teach me about it

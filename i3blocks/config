@@ -1,0 +1,15 @@
+# Global settings
+separator_block_width=15
+markup=none
+
+[volume]
+command=$HOME/.config/i3blocks/volume-scroll
+interval=2  # Changed from 'once' to refresh every 2 seconds if missing
+signal=1
+# Add timeout to prevent hanging
+timeout=2
+
+# Time Block
+[time]
+command=date '+%A %d-%m-%Y %H:%M:%S'
+interval=1

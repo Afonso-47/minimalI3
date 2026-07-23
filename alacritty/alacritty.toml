@@ -1,0 +1,23 @@
+# ~/.config/alacritty/alacritty.toml
+
+[window]
+opacity = 0.82
+
+[font]
+size = 13.5
+
+[font.normal]
+family = "JetBrains Mono"
+style = "ExtraLight"
+
+[font.bold]
+family = "JetBrains Mono"
+style = "Medium"  # Light's bold counterpart
+
+[font.italic]
+family = "JetBrains Mono"
+style = "ExtraLight Italic"
+
+[colors.primary]
+background = "#000000"
+foreground = "#ffffff"
