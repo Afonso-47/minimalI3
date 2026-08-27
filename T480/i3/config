@@ -1,0 +1,6 @@
+#!/bin/sh
+include conf.d/*.conf
+
+# i3 config file (v4)
+#
+# Please see https://i3wm.org/docs/userguide.html for a complete reference!
