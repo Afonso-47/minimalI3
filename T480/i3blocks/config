@@ -1,0 +1,4 @@
+#!/bin/sh
+# i3blocks config
+
+include /etc/i3blocks.conf
