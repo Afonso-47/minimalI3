@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<style-scheme id="gruvbox-dark" _name="Gruvbox Dark" version="1.0">
+
+  <style name="bracket-match"  background="#3c3836" bold="true"/>
+  <style name="bracket-mismatch"  background="#3c3836" underline="true"/>
+  <style name="css:at-rules" foreground="#b16286"/>
+  <style name="css:color" foreground="#d3869b"/>
+  <style name="css:keyword" foreground="#83a598" italic="true"/>
+  <style name="current-line"  background="#32302f"/>
+  <style name="cursor" foreground="#fbf1c7"/>
+  <style name="def:base-n-integer" foreground="#d3869b"/>
+  <style name="def:boolean" foreground="#d3869b"/>
+  <style name="def:builtin" foreground="#d3869b"/>
+  <style name="def:character" foreground="#d3869b"/>
+  <style name="def:comment" foreground="#928374"/>
+  <style name="def:complex" foreground="#d3869b"/>
+  <style name="def:decimal" foreground="#d3869b"/>
+  <style name="def:doc-comment" foreground="#928374"/>
+  <style name="def:doc-comment-element" foreground="#928374"/>
+  <style name="def:error" foreground="#fbf1c7" background="#cc241d"/>
+  <style name="def:floating-point" foreground="#d3869b"/>
+  <style name="def:function" foreground="#b8bb26"/>
+  <style name="def:keyword" foreground="#cc241d"/>
+  <style name="def:note" foreground="#928374"/>
+  <style name="def:number" foreground="#d3869b"/>
+  <style name="def:operator" foreground="#cc241d"/>
+  <style name="def:preprocessor" foreground="#83a598"/>
+  <style name="def:reserved" foreground="#cc241d"/>
+  <style name="def:shebang" foreground="#928374"/>
+  <style name="def:special-char" foreground="#83a598"/>
+  <style name="def:special-constant" foreground="#d3869b"/>
+  <style name="def:statement" foreground="#cc241d"/>
+  <style name="def:string" foreground="#d79921"/>
+  <style name="def:type" foreground="#83a598" italic="true"/>
+  <style name="draw-spaces" foreground="#32302f"/>
+  <style name="html:dtd" foreground="#d79921"/>
+  <style name="html:tag" foreground="#cc241d"/>
+  <style name="js:function" foreground="#83a598"/>
+  <style name="line-numbers" foreground="#928374" background="#1d2021"/>
+  <style name="perl:builtin" foreground="#b8bb26"/>
+  <style name="perl:include-statement" foreground="#cc241d"/>
+  <style name="perl:special-variable" foreground="#d3869b"/>
+  <style name="php:string" foreground="#d79921"/>
+  <style name="python:builtin-constant" foreground="#cc241d"/>
+  <style name="python:builtin-function" foreground="#b8bb26"/>
+  <style name="python:module-handler" foreground="#cc241d"/>
+  <style name="python:special-variable" foreground="#cc241d"/>
+  <style name="ruby:attribute-definition" foreground="#cc241d"/>
+  <style name="ruby:global-variable" foreground="#b8bb26"/>
+  <style name="ruby:module-handler" foreground="#cc241d"/>
+  <style name="ruby:predefined-variable" foreground="#d3869b"/>
+  <style name="ruby:regex" foreground="#d79921"/>
+  <style name="ruby:special-variable" foreground="#cc241d"/>
+  <style name="ruby:symbol" foreground="#d3869b"/>
+  <style name="rubyonrails:attribute-definition" foreground="#cc241d"/>
+  <style name="rubyonrails:block-parameter" foreground="#fe8019" italic="true"/>
+  <style name="rubyonrails:class-inherit" foreground="#b8bb26" underline="true" italic="true"/>
+  <style name="rubyonrails:class-name" foreground="#83a598" italic="true"/>
+  <style name="rubyonrails:complex-interpolation" foreground="#d3869b"/>
+  <style name="rubyonrails:global-variable" foreground="#b8bb26"/>
+  <style name="rubyonrails:module-handler" foreground="#cc241d"/>
+  <style name="rubyonrails:module-name" foreground="#83a598" italic="true"/>
+  <style name="rubyonrails:predefined-variable" foreground="#d3869b"/>
+  <style name="rubyonrails:regex" foreground="#d79921"/>
+  <style name="rubyonrails:simple-interpolation" foreground="#d3869b"/>
+  <style name="rubyonrails:special-variable" foreground="#cc241d"/>
+  <style name="rubyonrails:symbol" foreground="#d3869b"/>
+  <style name="search-match"  background="#504945" bold="true" underline="true"/>
+  <style name="selection" foreground="#fbf1c7" background="#504945"/>
+  <style name="text" foreground="#fbf1c7" background="#1d2021"/>
+  <style name="xml:attribute-name" foreground="#b8bb26"/>
+  <style name="xml:element-name" foreground="#cc241d"/>
+  <style name="xml:namespace" foreground="#cc241d"/>
+  <style name="xml:tag" foreground="#cc241d"/>
+
+</style-scheme>

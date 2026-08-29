@@ -1,0 +1,81 @@
+#!/bin/bash
+# Battery block, gruvbox-colored by charge level.
+# Shows one icon PER battery (BAT0 + BAT1 on the T480's dual-battery setup),
+# and a single percentage that's the simple average of both batteries.
+
+icon_for() {
+    local status="$1" capacity="$2"
+    case "$status" in
+        Charging) echo "󰂄" ;;
+        Full)     echo "󰁹" ;;
+        *)
+            if   [ "$capacity" -ge 80 ]; then echo "󰂁"
+            elif [ "$capacity" -ge 60 ]; then echo "󰂀"
+            elif [ "$capacity" -ge 40 ]; then echo "󰁿"
+            elif [ "$capacity" -ge 20 ]; then echo "󰁽"
+            else echo "󰂃"
+            fi
+            ;;
+    esac
+}
+
+ICONS=""
+CAPS=()
+STATUSES=()
+
+for BAT in /sys/class/power_supply/BAT*; do
+    [ -d "$BAT" ] || continue
+
+    # Prefer the kernel's own "capacity" percentage; fall back to
+    # energy_now/energy_full, then charge_now/charge_full.
+    if [ -f "$BAT/capacity" ]; then
+        CAP=$(cat "$BAT/capacity" 2>/dev/null)
+    elif [ -f "$BAT/energy_now" ] && [ -f "$BAT/energy_full" ]; then
+        NOW=$(cat "$BAT/energy_now" 2>/dev/null)
+        FULL=$(cat "$BAT/energy_full" 2>/dev/null)
+        [ -n "$NOW" ] && [ -n "$FULL" ] && [ "$FULL" -gt 0 ] && CAP=$((NOW * 100 / FULL))
+    elif [ -f "$BAT/charge_now" ] && [ -f "$BAT/charge_full" ]; then
+        NOW=$(cat "$BAT/charge_now" 2>/dev/null)
+        FULL=$(cat "$BAT/charge_full" 2>/dev/null)
+        [ -n "$NOW" ] && [ -n "$FULL" ] && [ "$FULL" -gt 0 ] && CAP=$((NOW * 100 / FULL))
+    fi
+    [ -n "$CAP" ] || continue
+
+    ST=$(cat "$BAT/status" 2>/dev/null)
+    [ -n "$ST" ] || ST="Unknown"
+
+    CAPS+=("$CAP")
+    STATUSES+=("$ST")
+    ICONS="$ICONS$(icon_for "$ST" "$CAP") "
+done
+
+if [ "${#CAPS[@]}" -eq 0 ]; then
+    echo "no battery"
+    exit 0
+fi
+
+ICONS="${ICONS% }"
+
+SUM=0
+for CAP in "${CAPS[@]}"; do
+    SUM=$((SUM + CAP))
+done
+AVG=$((SUM / ${#CAPS[@]}))
+
+# Red/yellow thresholds only apply while nothing is charging, same as before
+CHARGING=0
+for ST in "${STATUSES[@]}"; do
+    [ "$ST" = "Charging" ] && CHARGING=1
+done
+
+if [ "$AVG" -le 15 ] && [ "$CHARGING" -eq 0 ]; then
+    COLOR="#fb4934"
+elif [ "$AVG" -le 30 ] && [ "$CHARGING" -eq 0 ]; then
+    COLOR="#fabd2f"
+else
+    COLOR="#ebdbb2"
+fi
+
+echo "$ICONS ${AVG}%"
+echo "$ICONS ${AVG}%"
+echo "$COLOR"

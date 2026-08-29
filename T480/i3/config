@@ -1,6 +1,35 @@
 #!/bin/sh
-include conf.d/*.conf
-
 # i3 config file (v4)
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
+
+# ---
+# env variables
+# ...
+
+set $mod Mod4
+set $refresh_i3status killall -SIGUSR1 i3status
+
+# Define names for default workspaces for which we configure key bindings later on.
+# We use variables to avoid repeating the names in multiple places.
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# gruvbox-dark palette, https://lospec.com/palette-list/gruvbox-dark
+set $bg0    #282828
+set $bg1    #3c3836
+set $bg2    #504945
+set $fg     #ebdbb2
+set $gray   #665c54
+set $red    #fb4934
+set $yellow #fabd2f
+
+include $HOME/.config/i3/conf.d/*.conf

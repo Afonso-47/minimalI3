@@ -1,4 +1,36 @@
 #!/bin/sh
-# i3blocks config
+# i3blocks config — gruvbox-dark themed to match the i3 bar colors in
+# T480/i3/conf.d/30-autostart.conf
 
-include /etc/i3blocks.conf
+separator_block_width=15
+markup=none
+
+[disk]
+label=🖴 
+command=df -h /home | awk 'NR==2{print $4" free"}'
+interval=300
+
+[volume]
+command=$HOME/.config/i3blocks/volume-scroll
+interval=once
+signal=1
+
+[battery]
+command=$HOME/.config/i3blocks/battery
+interval=30
+
+[wifi]
+label=ᯤ 
+command=nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes' | cut -d: -f2
+interval=10
+
+[calendar]
+label=🗓 
+command=date '+%a %d %b'
+interval=1
+
+[time]
+label=⏲ 
+command=date '+%H:%M '
+interval=1
+

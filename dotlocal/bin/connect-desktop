@@ -1,0 +1,60 @@
+#!/bin/bash
+
+DESKTOP_IP="10.10.10.1"
+DESKTOP_USER="afonso"
+LAPTOP_WG_IP="10.10.10.2"
+AUDIO_PORT=6001
+
+# Bring up the tunnel if it's not already active
+if ! sudo wg show wg0 &>/dev/null; then
+    echo "Bringing up WireGuard..."
+    sudo wg-quick up wg0
+    sleep 1
+fi
+
+# Check if desktop is reachable
+if ping -c1 -W1 ${DESKTOP_IP} &>/dev/null; then
+    echo "Desktop is already online."
+else
+    echo "Desktop appears to be offline. Sending Wake-on-LAN..."
+    for i in 1 2 3; do
+	    wakeonlan -i 188.37.48.172 -p 9 60:cf:84:81:20:8c
+		sleep 1
+	done
+    echo "Waiting for desktop to come online..."
+	attempts=0
+    until ping -c1 -W1 ${DESKTOP_IP} &>/dev/null; do
+        sleep 5
+        attempts=$((attempts+1))
+        if [ $attempts -ge 36 ]; then # ~3 minutes
+        	echo "Desktop didn't come online after 3 minutes - check WoL/BIOS settings."
+        	exit 1
+        fi
+    done
+    echo "Desktop is now reachable."
+fi
+
+# Clear any stray audio processes from a previous run
+pkill -f "nc -u -l ${AUDIO_PORT}" 2>/dev/null
+ssh ${DESKTOP_USER}@${DESKTOP_IP} "pkill -f parec; pkill -f 'nc -u -q1'" 2>/dev/null
+sleep 0.5
+
+# Debug SSH terminal
+# xfce4-terminal --title="Desktop SSH" -e "ssh ${DESKTOP_USER}@${DESKTOP_IP}" &
+
+# UDP audio listener on the laptop — data plane, bypasses SSH entirely
+nc -u -l ${AUDIO_PORT} | aplay -f S32_LE -r 48000 -c 2 -B 200000 &
+LISTENER_PID=$!
+sleep 0.5
+
+# Kick off capture on the desktop; audio travels as raw UDP over wg0, not through the SSH channel
+ssh ${DESKTOP_USER}@${DESKTOP_IP} \
+    "parec --format=s32le --rate=48000 --channels=2 -d @DEFAULT_SINK@.monitor --latency-msec=100 | dd bs=1024 2>/dev/null | nc -u -q1 ${LAPTOP_WG_IP} ${AUDIO_PORT}" &
+SENDER_PID=$!
+
+cleanup() {
+    kill "$LISTENER_PID" "$SENDER_PID" 2>/dev/null
+}
+trap cleanup EXIT INT TERM
+
+vncviewer -passwd ~/.config/tigervnc/passwd -fullscreen "${DESKTOP_IP}:1"
