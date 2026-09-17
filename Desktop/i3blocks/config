@@ -1,15 +1,31 @@
-# Global settings
+#!/bin/sh
+# i3blocks config — gruvbox-dark themed to match the i3 bar colors in
+# Desktop/i3/conf.d/30-autostart.conf
+
 separator_block_width=15
 markup=none
 
+[disk]
+label=🖴 
+command=df -h /home | awk 'NR==2{print $4" free"}'
+interval=300
+
 [volume]
 command=$HOME/.config/i3blocks/volume-scroll
-interval=2  # Changed from 'once' to refresh every 2 seconds if missing
+interval=once
 signal=1
-# Add timeout to prevent hanging
-timeout=2
 
-# Time Block
+[wifi]
+label=ᯤ 
+command=nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes' | cut -d: -f2
+interval=10
+
+[calendar]
+label=🗓 
+command=date '+%a %d %b'
+interval=1
+
 [time]
-command=date '+%A %d-%m-%Y %H:%M:%S'
+label=⏲ 
+command=date '+%H:%M '
 interval=1

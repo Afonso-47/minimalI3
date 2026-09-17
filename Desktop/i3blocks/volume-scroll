@@ -1,36 +1,32 @@
 #!/bin/bash
 
-# Debug logging (remove after testing)
-# echo "$(date): Button $BLOCK_BUTTON" >> /tmp/volume-debug.log
+# Volume block: scroll to change volume, click to toggle mute
+# Adapted from the Desktop config's wpctl version, using pactl instead
+# since that's what T480's XF86Audio keybinds already use.
 
-# Ensure we have a valid default sink
-DEFAULT_SINK="@DEFAULT_AUDIO_SINK@"
+SINK="@DEFAULT_SINK@"
 
-case $BLOCK_BUTTON in
-    4) wpctl set-volume "$DEFAULT_SINK" 1%+ ;;
-    5) wpctl set-volume "$DEFAULT_SINK" 1%- ;;
-    1) wpctl set-mute "$DEFAULT_SINK" toggle ;;
+case "$BLOCK_BUTTON" in
+    1) pactl set-sink-mute "$SINK" toggle ;;
+    4) pactl set-sink-volume "$SINK" +1% ;;
+    5) pactl set-sink-volume "$SINK" -1% ;;
 esac
 
-# Get volume with proper error handling
-VOLUME_INFO=$(wpctl get-volume "$DEFAULT_SINK" 2>/dev/null)
-if [ $? -ne 0 ] || [ -z "$VOLUME_INFO" ]; then
-    echo "♪ ?%"
-    exit 1
-fi
+MUTED=$(pactl get-sink-mute "$SINK" 2>/dev/null | grep -q "yes" && echo yes)
+VOLUME=$(pactl get-sink-volume "$SINK" 2>/dev/null | grep -oP '\d+(?=%)' | head -1)
 
-# Check if muted
-if echo "$VOLUME_INFO" | grep -q "MUTED"; then
-    echo "🔇 Muted"
+if [ "$MUTED" = "yes" ]; then
+    echo "󰝟 muted"
+    echo "󰝟"
+    echo "#665c54"
+elif [[ "$VOLUME" =~ ^[0-9]+$ ]]; then
+    echo "󰕾 ${VOLUME}%"
+    echo "󰕾 ${VOLUME}%"
+    echo "#ebdbb2"
 else
-    VOLUME=$(echo "$VOLUME_INFO" | awk '{printf "%d\n", $2 * 100}')
-    # Ensure volume is a valid number between 0-100
-    if [[ "$VOLUME" =~ ^[0-9]+$ ]] && [ "$VOLUME" -ge 0 ] && [ "$VOLUME" -le 100 ]; then
-        echo "♪ ${VOLUME}%"
-    else
-        echo "♪ ?%"
-    fi
+    echo "󰕾 ?%"
+    echo "󰕾 ?%"
 fi
 
-# Signal i3blocks to refresh (don't fail if i3blocks isn't running)
+# Refresh this block immediately after a click/scroll
 pkill -RTMIN+1 i3blocks 2>/dev/null || true
