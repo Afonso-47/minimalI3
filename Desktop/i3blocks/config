@@ -15,11 +15,6 @@ command=$HOME/.config/i3blocks/volume-scroll
 interval=once
 signal=1
 
-[wifi]
-label=ᯤ 
-command=nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes' | cut -d: -f2
-interval=10
-
 [calendar]
 label=🗓 
 command=date '+%a %d %b'
@@ -28,4 +23,8 @@ interval=1
 [time]
 label=⏲ 
 command=date '+%H:%M '
+interval=1
+
+[pin-bar]
+command=$HOME/.config/i3blocks/pin-bar
 interval=1

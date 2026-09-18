@@ -1,0 +1,22 @@
+#!/bin/bash
+# Bar pin toggle for i3blocks. Click to toggle; reflects current state.
+flag="/tmp/bar_pinned_flag"
+
+if [ "$BLOCK_BUTTON" = "1" ]; then
+    current="$(cat "$flag" 2>/dev/null)"
+    if [ "$current" = "1" ]; then
+        echo 0 > "$flag"
+    else
+        echo 1 > "$flag"
+    fi
+fi
+
+if [ "$(cat "$flag" 2>/dev/null)" = "1" ]; then
+    echo "󰐃 pinned"
+    echo "󰐃"
+    echo "#fabd2f"
+else
+    echo "󰤱 auto-hide"
+    echo "󰤱"
+    echo "#928374"
+fi
