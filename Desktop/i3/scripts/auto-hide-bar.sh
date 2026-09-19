@@ -11,6 +11,12 @@ trap 'rmdir "$lockfile"' EXIT
 pin_flag="/tmp/bar_pinned_flag"
 bar_visible=false
 
+# The static bar config defaults to "dock" (always visible) so the VNC
+# session, which never runs this script, gets a sane always-on bar.
+# This script actively switches to hide mode on startup so the local
+# session's hover/pin behavior takes over from there.
+i3-msg bar mode hide > /dev/null 2>&1
+
 while true; do
     # Reliable liveness check: talk to i3's actual IPC socket instead of
     # scanning the process table. If i3/X is gone this fails immediately
