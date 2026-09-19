@@ -1,0 +1,62 @@
+#!/bin/bash
+# Symlinks individual tracked config/local folders from this repo into
+# ~/.config and ~/.local, rather than symlinking those directories
+# wholesale. Per-item is deliberate: this repo is public, and a
+# whole-directory symlink would mean every cache file, token, or piece
+# of machine-specific junk any app ever writes into ~/.config lands
+# straight in git. Revisit this once there's a private git server to
+# push to instead — a full-directory symlink becomes reasonable then.
+#
+# Usage: setup-symlinks <repo-config-dir> <repo-local-dir>
+#   e.g. setup-symlinks ~/GitHub/minimalI3/koios/config ~/GitHub/minimalI3/koios/local
+
+set -e
+
+REPO_CONFIG="${1:?Usage: setup-symlinks <repo-config-dir> <repo-local-dir>}"
+REPO_LOCAL="${2:?Usage: setup-symlinks <repo-config-dir> <repo-local-dir>}"
+
+link_item() {
+    local src="$1"
+    local dest="$2"
+
+    if [ ! -e "$src" ]; then
+        echo "skip (source missing): $src"
+        return
+    fi
+
+    if [ -L "$dest" ]; then
+        # Already a symlink — check if it already points where we want.
+        if [ "$(readlink -f "$dest")" = "$(readlink -f "$src")" ]; then
+            echo "already linked: $dest"
+            return
+        fi
+        echo "relinking: $dest (was pointing elsewhere)"
+        rm "$dest"
+    elif [ -e "$dest" ]; then
+        # Real file/dir already there — back it up rather than clobber it.
+        local backup="${dest}.pre-symlink.$(date +%Y%m%d-%H%M%S)"
+        echo "backing up existing $dest -> $backup"
+        mv "$dest" "$backup"
+    fi
+
+    mkdir -p "$(dirname "$dest")"
+    ln -s "$src" "$dest"
+    echo "linked: $dest -> $src"
+}
+
+echo "=== Linking ~/.config items from $REPO_CONFIG ==="
+for item in "$REPO_CONFIG"/*; do
+    name="$(basename "$item")"
+    link_item "$item" "$HOME/.config/$name"
+done
+
+echo
+echo "=== Linking ~/.local items from $REPO_LOCAL ==="
+for item in "$REPO_LOCAL"/*; do
+    name="$(basename "$item")"
+    link_item "$item" "$HOME/.local/share/$name"
+done
+
+echo
+echo "Done. Existing real files (if any) were backed up with a"
+echo ".pre-symlink.<timestamp> suffix next to their original location."

@@ -1,0 +1,11 @@
+#!/bin/sh
+# One-shot fixup: dconf/gsettings takes precedence over both
+# ~/.config/gtk-3.0/settings.ini and xsettingsd's broadcast for
+# gtk-theme/icon-theme, so a stale dconf value (e.g. from a past
+# theme experiment) silently wins and GTK apps stop reflecting the
+# repo's theme even though every config file looks correct.
+# Run this once after changing the GTK theme, or after this repo's
+# theme changes, to keep dconf in sync.
+gsettings set org.gnome.desktop.interface gtk-theme 'Gruvbox-Red-Dark'
+gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+gsettings set org.gnome.desktop.interface cursor-theme 'Simp1e-Gruvbox-Dark'

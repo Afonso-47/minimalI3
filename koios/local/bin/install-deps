@@ -1,0 +1,101 @@
+#!/bin/bash
+# Bootstrap script for a fresh Arch install matching this dotfiles repo's
+# Desktop (koios) configuration. Installs official repo packages via
+# pacman, then AUR packages via yay (installing yay itself first if
+# missing). Idempotent — safe to re-run, pacman/yay skip anything
+# already installed.
+#
+# This list reflects packages specifically identified as required or
+# fixed during setup of this config — not a blind dump of every package
+# on the machine. If something in here stops being needed, remove it
+# here too so this stays trustworthy for a fresh install.
+
+set -e
+
+echo "=== Official repo packages (pacman) ==="
+sudo pacman -S --needed --noconfirm \
+    i3-wm \
+    i3blocks \
+    i3status \
+    rofi \
+    dex \
+    xsettingsd \
+    picom \
+    dunst \
+    pcmanfm \
+    alacritty \
+    fish \
+    arandr \
+    xdotool \
+    xf86-input-wacom \
+    libwacom \
+    maim \
+    xclip \
+    slop \
+    feh \
+    polkit-gnome \
+    gnome-keyring \
+    qt5ct \
+    ttf-iosevka-nerd \
+    papirus-icon-theme \
+    gtk-engine-murrine \
+    tigervnc \
+    openssh \
+    wireguard-tools \
+    ly
+
+echo
+echo "=== yay (AUR helper) ==="
+if ! command -v yay >/dev/null 2>&1; then
+    echo "yay not found, building from AUR..."
+    tmpdir=$(mktemp -d)
+    git clone https://aur.archlinux.org/yay.git "$tmpdir/yay"
+    (cd "$tmpdir/yay" && makepkg -si --noconfirm)
+    rm -rf "$tmpdir"
+else
+    echo "yay already installed, skipping."
+fi
+
+echo
+echo "=== AUR packages (yay) ==="
+yay -S --needed --noconfirm \
+    gruvbox-gtk-theme-git \
+    gruvbox-icon-theme-git \
+    xcursor-simp1e-gruvbox-dark \
+    papirus-folders \
+    vesktop-bin
+
+echo
+echo "=== Post-install steps (not automated — do these manually) ==="
+cat << 'NOTES'
+1. Run this repo's symlink setup script to link config/local into place:
+     ~/GitHub/minimalI3/koios/local/bin/setup-symlinks ~/GitHub/minimalI3/koios/config ~/GitHub/minimalI3/koios/local
+
+2. Recolor Papirus folders (resets on every papirus-icon-theme update,
+   so this needs re-running after updates too):
+     papirus-folders -C red --theme Papirus-Dark
+
+3. GTK theme must also be set via dconf — settings.ini and xsettingsd
+   alone are NOT enough, dconf silently overrides both if it has any
+   stale value set:
+     gsettings set org.gnome.desktop.interface gtk-theme 'Gruvbox-Red-Dark'
+     gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+     gsettings set org.gnome.desktop.interface cursor-theme 'Simp1e-Gruvbox-Dark'
+   (or just run koios/local/bin/apply-gtk-theme, which does exactly this,
+   once symlinked into ~/.local/bin)
+
+4. Check ~/.xprofile and any ~/.local/share/applications/*.desktop
+   overrides for stale GTK_THEME=... exports — these silently override
+   everything above and have caused real theme bugs before. Grep for
+   GTK_THEME across ~/.xprofile, ~/.config/fish, and
+   ~/.local/share/applications/ before assuming theming "isn't working".
+
+5. wacom: run wacom-setup.sh (lives outside this repo, in
+   ~/.local/bin) to map the tablet to the primary monitor. This script
+   itself is NOT currently tracked in the repo — worth adding later.
+
+6. Vesktop: after installing, remove --start-minimized from its
+   autostart .desktop entry if present — the tray icon does not
+   reliably render in i3bar, so starting minimized means an invisible,
+   unreachable window.
+NOTES
