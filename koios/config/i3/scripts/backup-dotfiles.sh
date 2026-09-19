@@ -1,8 +1,18 @@
 #!/bin/bash
-# Tarball backup of ~/.config and ~/.local, taken on every i3 login.
-# Skips creating a new backup if nothing has changed since the last one
-# (compared by content hash, not mtime — mtimes change on every deploy
-# even when content doesn't, e.g. after a fresh git checkout).
+# Tarball backup of specific config-relevant paths, taken on every i3
+# login. Skips creating a new backup if nothing has changed since the
+# last one (compared by content hash, not mtime).
+#
+# Deliberately an ALLOWLIST, not an excludelist: ~/.local/share and
+# ~/.local/state hold huge amounts of real application DATA (Steam
+# game installs, Minecraft instances, browser profiles) that has
+# nothing to do with dotfiles/config and will never reliably be
+# excludable by pattern-matching alone — a previous version of this
+# script tried excluding known-bad paths under ~/.local/share and
+# still produced a 309GB tarball because it silently included 343GB of
+# Steam's steamapps/common (the actual installed games) that nobody
+# had thought to exclude. Listing exactly what to include is the only
+# way to guarantee this stays a small, fast, actual config backup.
 
 BACKUP_DIR="$HOME/backups"
 mkdir -p "$BACKUP_DIR"
@@ -18,42 +28,33 @@ log() {
 
 log "=== Backup run started ==="
 
-# Build a stable content hash across both directories: sort file list so
-# ordering doesn't affect the hash, hash each file's content, then hash
-# that combined list. Excludes large, easily-regenerated/redownloadable
-# data (browser caches, Steam shader/compat caches, thumbnails, trash)
-# that changes on every login regardless of real config edits, and would
-# otherwise make this slow and bloat the tarball for no backup value.
+# Explicit list of what actually gets backed up. Add to this list
+# deliberately when you start tracking a new app's config — do not
+# widen it to "all of .local/share" again.
+INCLUDE_PATHS=(
+    ".config"
+    ".local/bin"
+    ".local/share/gtksourceview-4"
+)
+
 EXCLUDE_ARGS=(
     -not -path "*/Cache/*"
     -not -path "*/cache/*"
     -not -path "*/CachedData/*"
     -not -path "*/.git/*"
-    -not -path "*/Trash/*"
-    -not -path "*/thumbnails/*"
-    -not -path "*/steam/steamapps/shadercache/*"
-    -not -path "*/steam/steamapps/compatdata/*"
-    -not -path "*/vesktop/*Cache*"
-    -not -path "*/BraveSoftware/*/Cache*"
-    -not -path "*/BraveSoftware/*/Code Cache/*"
-    -not -path "*/BraveSoftware/*/GPUCache/*"
+    -not -path "*/vesktop/sessionData/*"
     -not -name "*.lock"
     -not -name "*.sock"
     -not -name "*~"
 )
 
 compute_hash() {
-    find "$HOME/.config" "$HOME/.local" \
-        -type f \
-        "${EXCLUDE_ARGS[@]}" \
-        2>/dev/null \
-        | sort \
-        | xargs -d '\n' sha256sum 2>/dev/null \
-        | sha256sum \
-        | awk '{print $1}'
+    for p in "${INCLUDE_PATHS[@]}"; do
+        [ -e "$HOME/$p" ] && find "$HOME/$p" -type f "${EXCLUDE_ARGS[@]}" 2>/dev/null
+    done | sort | xargs -d '\n' sha256sum 2>/dev/null | sha256sum | awk '{print $1}'
 }
 
-log "Hashing ~/.config and ~/.local (this can take a moment on the first run)..."
+log "Hashing tracked config paths..."
 CURRENT_HASH=$(compute_hash)
 log "Current hash: $CURRENT_HASH"
 
@@ -72,22 +73,22 @@ fi
 
 log "Changes detected (or first run) — creating tarball: $TARBALL"
 
+# Only tar paths that actually exist, so a missing optional dir doesn't
+# make tar exit non-zero.
+EXISTING_PATHS=()
+for p in "${INCLUDE_PATHS[@]}"; do
+    [ -e "$HOME/$p" ] && EXISTING_PATHS+=("$p")
+done
+
 tar -czf "$TARBALL" \
     -C "$HOME" \
-    --exclude=".config/*/Cache" \
-    --exclude=".config/*/cache" \
-    --exclude=".config/*/CachedData" \
-    --exclude=".config/*/Code Cache" \
-    --exclude=".config/*/GPUCache" \
-    --exclude=".config/BraveSoftware/*/Cache" \
-    --exclude=".config/BraveSoftware/*/Code Cache" \
-    --exclude=".config/BraveSoftware/*/GPUCache" \
-    --exclude=".config/vesktop/*Cache*" \
-    --exclude=".local/share/Trash" \
-    --exclude=".local/share/Steam/steamapps/shadercache" \
-    --exclude=".local/share/Steam/steamapps/compatdata" \
-    --exclude="*/thumbnails" \
-    .config .local 2>>"$LOG_FILE"
+    --exclude="*/Cache" \
+    --exclude="*/cache" \
+    --exclude="*/CachedData" \
+    --exclude="*/Code Cache" \
+    --exclude="*/GPUCache" \
+    --exclude="vesktop/sessionData" \
+    "${EXISTING_PATHS[@]}" 2>>"$LOG_FILE"
 
 TAR_STATUS=$?
 
