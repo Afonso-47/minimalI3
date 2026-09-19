@@ -10,6 +10,13 @@ mkdir -p "$BACKUP_DIR"
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 TARBALL="$BACKUP_DIR/dotfiles-${TIMESTAMP}.tar.gz"
 LATEST_HASH_FILE="$BACKUP_DIR/.last-backup-hash"
+LOG_FILE="$BACKUP_DIR/backup.log"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+log "=== Backup run started ==="
 
 # Build a stable content hash across both directories: sort file list so
 # ordering doesn't affect the hash, hash each file's content, then hash
@@ -46,14 +53,24 @@ compute_hash() {
         | awk '{print $1}'
 }
 
+log "Hashing ~/.config and ~/.local (this can take a moment on the first run)..."
 CURRENT_HASH=$(compute_hash)
+log "Current hash: $CURRENT_HASH"
+
 LAST_HASH=""
-[ -f "$LATEST_HASH_FILE" ] && LAST_HASH=$(cat "$LATEST_HASH_FILE")
+if [ -f "$LATEST_HASH_FILE" ]; then
+    LAST_HASH=$(cat "$LATEST_HASH_FILE")
+    log "Last backup hash: $LAST_HASH"
+else
+    log "No previous backup hash found (first run)."
+fi
 
 if [ "$CURRENT_HASH" = "$LAST_HASH" ] && [ -n "$LAST_HASH" ]; then
-    # Nothing changed since the last backup — skip.
+    log "No changes since last backup — skipping. Nothing to do."
     exit 0
 fi
+
+log "Changes detected (or first run) — creating tarball: $TARBALL"
 
 tar -czf "$TARBALL" \
     -C "$HOME" \
@@ -70,11 +87,17 @@ tar -czf "$TARBALL" \
     --exclude=".local/share/Steam/steamapps/shadercache" \
     --exclude=".local/share/Steam/steamapps/compatdata" \
     --exclude="*/thumbnails" \
-    .config .local 2>/dev/null
+    .config .local 2>>"$LOG_FILE"
 
-if [ $? -eq 0 ]; then
+TAR_STATUS=$?
+
+if [ $TAR_STATUS -eq 0 ]; then
     echo "$CURRENT_HASH" > "$LATEST_HASH_FILE"
+    SIZE=$(du -h "$TARBALL" | cut -f1)
+    log "Backup created successfully: $TARBALL ($SIZE)"
 else
-    # tar failed — remove any partial tarball rather than leave junk behind
+    log "ERROR: tar exited with status $TAR_STATUS — removing partial tarball."
     rm -f "$TARBALL"
 fi
+
+log "=== Backup run finished ==="
