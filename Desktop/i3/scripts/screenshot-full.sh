@@ -8,12 +8,6 @@ mkdir -p "$SCREENSHOT_DIR"
 FILENAME="screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
 FILEPATH="$SCREENSHOT_DIR/$FILENAME"
 
-# See screenshot-selection.sh for why this delay exists — same
-# blur-gets-baked-into-the-capture issue (maim issue #290). Give any
-# in-flight transition a moment to settle instead of killing picom,
-# which would strip the rice out of the shot entirely.
-sleep 0.3
-
 # Take fullscreen screenshot with maim
 maim -u "$FILEPATH"
 
